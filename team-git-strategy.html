@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Team Git Strategy & Workflow Guidelines</title>
+  <style>
+    :root{--bg:#071029;--card:#071a2a;--accent:#0ea5e9;--muted:#94a3b8;--glass:rgba(255,255,255,0.03);--mono:'Segoe UI Mono','Roboto Mono',Menlo,monospace}
+    *{box-sizing:border-box}html,body{height:100%}body{margin:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial;background:linear-gradient(180deg,#061022 0%,#071a2a 100%);color:#e6eef8;padding:28px}
+    .container{max-width:980px;margin:0 auto}
+    header{display:flex;gap:16px;align-items:center;margin-bottom:18px}
+    .logo{width:56px;height:56px;border-radius:10px;background:linear-gradient(135deg,#7c3aed,#06b6d4);display:flex;align-items:center;justify-content:center;font-weight:700;color:white;font-size:16px}
+    h1{margin:0;font-size:20px}p.lead{margin:6px 0 0;color:var(--muted)}
+    .card{background:linear-gradient(180deg,var(--card), rgba(11,18,32,0.5));border-radius:12px;padding:20px;box-shadow:0 8px 30px rgba(2,6,23,0.6);margin-bottom:18px}
+    section{margin-bottom:14px}
+    table{width:100%;border-collapse:collapse;margin:8px 0}
+    table th,table td{padding:8px;border-bottom:1px solid rgba(255,255,255,0.04);text-align:left}
+    pre{background:#020617;padding:12px;border-radius:8px;overflow:auto;font-family:var(--mono);font-size:13px}
+    .btn{background:linear-gradient(90deg,#7c3aed,#06b6d4);border:none;color:white;padding:10px 12px;border-radius:8px;cursor:pointer;font-weight:700}
+    .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+    .flex{display:flex;gap:12px;align-items:center}
+    .muted{color:var(--muted);font-size:13px}
+    @media (max-width:900px){.cols{display:block}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">TEAM</div>
+      <div>
+        <h1>Team Git Strategy &amp; Workflow Guidelines</h1>
+        <p class="lead">Version: 1.0 — Ensure consistent, clean, and safe Git usage across the team.</p>
+      </div>
+    </header>
+
+    <div class="card">
+      <section>
+        <h2>Purpose &amp; Scope</h2>
+        <p class="muted">Purpose: Ensure consistent, clean, and safe Git usage across the team.<br>Applies to: All developers working on this repository.</p>
+      </section>
+
+      <section>
+        <h2>1. Branching Model</h2>
+        <p>Our team follows a feature-branch workflow with protected main branches.</p>
+
+        <h3>Primary Branches</h3>
+        <table>
+          <thead><tr><th>Branch</th><th>Purpose</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td><code>main</code></td><td>Production-ready code</td><td>Protected (no direct push)</td></tr>
+            <tr><td><code>develop</code> <span class="muted">(optional)</span></td><td>Staging / pre-release code</td><td>Protected (no direct push)</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Supporting Branches</h3>
+        <table>
+          <thead><tr><th>Branch Type</th><th>Prefix Example</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td>Feature</td><td><code>feature/login-ui</code></td><td>New features or modules</td></tr>
+            <tr><td>Bugfix</td><td><code>bugfix/payment-null</code></td><td>Non-critical fixes</td></tr>
+            <tr><td>Hotfix</td><td><code>hotfix/prod-crash</code></td><td>Immediate production fixes</td></tr>
+            <tr><td>Release</td><td><code>release/v1.2.0</code></td><td>Prepare version release notes/build</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Rules</h3>
+        <ul>
+          <li>Developers <strong>must not</strong> work directly on <code>main</code>.</li>
+          <li>Every task must have its own feature branch.</li>
+          <li>Branch names must be meaningful and hyphenated, e.g. <code>feature/module-description</code>, <code>bugfix/cart-discount-issue</code>.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>2. Merge Strategy</h2>
+        <p>We use a merge-first workflow for shared branches.</p>
+        <h4>✔ Allowed merge methods</h4>
+        <ul>
+          <li>Merge Commit (default)</li>
+          <li>Squash and Merge for messy feature branches</li>
+        </ul>
+        <h4>❌ Not allowed</h4>
+        <ul>
+          <li>“Rebase and Merge” into <code>main</code></li>
+          <li>Force-pushing into shared branches</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>3. Rebase Strategy</h2>
+        <p>Rebasing is allowed only in specific situations.</p>
+        <h4>✔ You MAY use rebase:</h4>
+        <ul>
+          <li>On your own feature branch</li>
+          <li>Before raising a Pull Request</li>
+          <li>To tidy commits (<code>git rebase -i</code>)</li>
+        </ul>
+        <h4>❌ You MUST NOT use rebase:</h4>
+        <ul>
+          <li>On any shared/pushed team branch</li>
+          <li>On <code>main</code>, <code>develop</code>, or <code>release</code> branches</li>
+          <li>After others already pulled your changes</li>
+        </ul>
+        <p><strong>Rule of thumb:</strong> Rebase your work; never rebase others’ work.</p>
+      </section>
+
+      <section>
+        <h2>4. Pull Request / Merge Request Workflow</h2>
+        <ol>
+          <li><strong>Update your feature branch</strong>
+            <pre>git fetch origin
+git rebase origin/main   # or merge if you prefer</pre>
+          </li>
+          <li><strong>Push updates</strong>
+            <p class="muted">If rebased earlier, safety push:</p>
+            <pre>git push --force-with-lease</pre>
+          </li>
+          <li><strong>Create a Pull Request</strong>
+            <p>Checklist:</p>
+            <ul>
+              <li>Clear title (what the feature is)</li>
+              <li>Description (what changed + screenshots if UI)</li>
+              <li>Unit tests (if applicable)</li>
+              <li>No debug code / console logs</li>
+              <li>CI pipeline must pass</li>
+            </ul>
+          </li>
+          <li><strong>Review Process</strong>
+            <p>Minimum 1–2 peer approvals required. Reviewers check:</p>
+            <ul>
+              <li>Code quality</li>
+              <li>Naming convention</li>
+              <li>Architectural alignment</li>
+              <li>Breaking changes</li>
+              <li>Security concerns</li>
+            </ul>
+          </li>
+          <li><strong>Merge safely into main</strong>
+            <p>Prefer Merge Commit. Use Squash and Merge for multiple small commits.</p>
+          </li>
+          <li><strong>Delete merged branch</strong>
+            <p class="muted">Keeps the repo clean.</p>
+          </li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>5. Conflict Resolution Guidelines</h2>
+        <h4>When merging:</h4>
+        <ul>
+          <li>Resolve conflicts once</li>
+          <li>Add all resolved files</li>
+          <li>Commit merge</li>
+        </ul>
+        <h4>When rebasing:</h4>
+        <ul>
+          <li>Resolve conflicts for each commit</li>
+          <li>Continue:</li>
+        </ul>
+        <pre>git add .
+git rebase --continue</pre>
+        <p class="muted">Best practice: Resolve conflicts using local editor, not GitHub/GitLab UI.</p>
+      </section>
+
+      <section>
+        <h2>6. Commit Message Guidelines</h2>
+        <p>We follow Conventional Commit Style:</p>
+        <p><strong>Format:</strong></p>
+        <pre>type(scope): short summary</pre>
+        <p>Examples:</p>
+        <ul>
+          <li><code>feat(auth): add jwt token refresh support</code></li>
+          <li><code>fix(order): handle null order id</code></li>
+          <li><code>refactor(ui): optimize component structure</code></li>
+          <li><code>docs(api): update swagger docs</code></li>
+        </ul>
+        <p>Accepted types: <code>feat</code>, <code>fix</code>, <code>refactor</code>, <code>perf</code>, <code>test</code>, <code>docs</code>, <code>style</code>, <code>chore</code>.</p>
+      </section>
+
+      <section>
+        <h2>7. Branch Protection Rules</h2>
+        <p>Protected branches: <code>main</code>, <code>develop</code> (if used).</p>
+        <p>Protection includes:</p>
+        <ul>
+          <li>No direct pushes</li>
+          <li>PR required</li>
+          <li>Minimum 1–2 reviewer approvals</li>
+          <li>All CI checks must pass</li>
+          <li>No force push</li>
+          <li>Require up-to-date with target branch before merging</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>8. Release Management</h2>
+        <p>Release branch approach:</p>
+        <pre>git checkout -b release/v1.5.0</pre>
+        <ul>
+          <li>Fix minor issues</li>
+          <li>Write release notes</li>
+          <li>Merge into:</li>
+        </ul>
+        <ul>
+          <li><code>main</code> → release version</li>
+          <li><code>develop</code> → sync changes</li>
+        </ul>
+        <p>Tagging:</p>
+        <pre>git tag -a v1.5.0 -m "Release 1.5.0"
+git push origin v1.5.0</pre>
+      </section>
+
+      <section>
+        <h2>9. Summary: Quick Decision Matrix</h2>
+        <table>
+          <thead><tr><th>Action</th><th>Merge</th><th>Rebase</th></tr></thead>
+          <tbody>
+            <tr><td>Pull updates to feature branch</td><td>Optional ✔</td><td>Preferred ✔</td></tr>
+            <tr><td>Integrate feature into main</td><td>✔</td><td>❌</td></tr>
+            <tr><td>Maintain clean commit history</td><td>❌</td><td>✔</td></tr>
+            <tr><td>Shared branches</td><td>✔</td><td>❌</td></tr>
+            <tr><td>Local-only private work</td><td>✔</td><td>✔</td></tr>
+            <tr><td>Fixing messy commits</td><td>❌</td><td>✔ (interactive rebase)</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>10. Do &amp; Don’t List</h2>
+        <h4>✔ DO</h4>
+        <ul>
+          <li>Use feature branches for all tasks</li>
+          <li>Update your branch regularly</li>
+          <li>Use rebasing only before PR submission</li>
+          <li>Keep commits small and meaningful</li>
+          <li>Delete merged branches</li>
+          <li>Follow Conventional Commits</li>
+        </ul>
+        <h4>❌ DON’T</h4>
+        <ul>
+          <li>Rebase shared branches</li>
+          <li>Force-push to <code>main</code> / <code>develop</code></li>
+          <li>Keep long-running feature branches without updates</li>
+          <li>Push code without testing</li>
+          <li>Merge failing pipelines</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>11. Team Responsibility</h2>
+        <p>Every team member is responsible for:</p>
+        <ul>
+          <li>Following Git standards</li>
+          <li>Keeping histories clean</li>
+          <li>Maintaining branch discipline</li>
+          <li>Conducting proper code reviews</li>
+          <li>Avoiding unsafe operations</li>
+        </ul>
+      </section>
+
+      <div class="flex" style="margin-top:12px">
+        <button class="btn" id="download">Download HTML</button>
+        <button class="btn secondary" id="copy">Copy Markdown</button>
+        <p class="muted" style="margin:0">Suggested filename: <code>docs/team-git-strategy.md</code></p>
+      </div>
+
+    </div>
+
+    <footer class="muted" style="margin-top:12px">Adjust this policy to your team's needs. Link it from README for visibility.</footer>
+  </div>
+
+  <script>
+    const markdown = `# Team Git Strategy & Workflow Guidelines
+
+Version: 1.0
+Purpose: Ensure consistent, clean, and safe Git usage across the team
+Applies to: All developers working on this repository
+
+1. Branching Model
+
+Our team follows a feature-branch workflow with protected main branches.
+
+Primary Branches
+- main: Production-ready code (Protected)
+- develop (optional): Staging / pre-release code (Protected)
+
+Supporting Branches:
+- Feature: feature/login-ui — New features or modules
+- Bugfix: bugfix/payment-null — Non-critical fixes
+- Hotfix: hotfix/prod-crash — Immediate production fixes
+- Release: release/v1.2.0 — Prepare version release notes/build
+
+Rules:
+- Developers must not work directly on main.
+- Every task must have its own feature branch.
+- Branch names must be meaningful and hyphenated: feature/module-description
+
+2. Merge Strategy
+- Allowed: Merge Commit (default), Squash and Merge
+- Not allowed: Rebase and Merge into main, Force-pushing into shared branches
+
+3. Rebase Strategy
+- You MAY use rebase on your own feature branch, before PR, to tidy commits (git rebase -i).
+- You MUST NOT use rebase on shared/pushed branches, on main/develop/release, or after others pulled.
+
+4. Pull Request / Merge Request Workflow
+1) Update your feature branch:
+   git fetch origin
+   git rebase origin/main   # or merge
+2) Push updates: git push --force-with-lease (if rebased)
+3) Create a Pull Request (clear title, description, tests, CI passing)
+4) Review Process (1-2 approvals required)
+5) Merge safely into main (Prefer Merge Commit or Squash)
+6) Delete merged branch
+
+5. Conflict Resolution Guidelines
+- When merging: resolve conflicts once, add, commit.
+- When rebasing: resolve per-commit, then git rebase --continue
+
+6. Commit Message Guidelines
+- Format: type(scope): short summary
+- Examples: feat(auth): add jwt token refresh support
+
+7. Branch Protection Rules
+- Protect main and develop; require PRs, approvals, CI, and no force push.
+
+8. Release Management
+- git checkout -b release/v1.5.0
+- Fix issues, write notes, merge to main and develop
+- Tagging: git tag -a v1.5.0 -m "Release 1.5.0" && git push origin v1.5.0
+
+9. Summary: Quick Decision Matrix
+- Pull updates to feature branch: Optional (merge) / Preferred (rebase)
+- Integrate feature into main: Merge ✔ / Rebase ❌
+- Maintain clean commit history: Rebase preferred
+
+10. Do & Don't List
+- DO: Use feature branches, update regularly, use --force-with-lease, delete merged branches
+- DON'T: Rebase shared branches, force-push protected branches, merge failing pipelines
+
+11. Team Responsibility
+- Follow standards, keep histories clean, conduct code reviews, avoid unsafe ops
+`;
+
+    document.getElementById('copy').addEventListener('click', async () => {
+      try{ await navigator.clipboard.writeText(markdown); alert('Markdown copied to clipboard — paste into docs/team-git-strategy.md'); }
+      catch(e){ alert('Copy failed — your browser may block clipboard.'); }
+    });
+
+    document.getElementById('download').addEventListener('click', () => {
+      const blob = new Blob([document.documentElement.outerHTML], {type:'text/html'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'team-git-strategy.html'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    });
+  </script>
+</body>
+</html>
