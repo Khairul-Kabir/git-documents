@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Git Merge vs Git Rebase — Full Technical Guide</title>
+  <style>
+    :root{
+      --bg:#0f1724; --card:#0b1220; --accent:#7c3aed; --muted:#94a3b8; --glass: rgba(255,255,255,0.03);
+      --mono: 'Segoe UI Mono', 'Roboto Mono', Menlo, monospace;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background:linear-gradient(180deg,#071029 0%, #061022 100%); color:#e6eef8; line-height:1.6; padding:28px;
+    }
+    .container{max-width:980px;margin:0 auto}
+    header{display:flex;gap:16px;align-items:center;margin-bottom:20px}
+    .logo{width:64px;height:64px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#06b6d4);display:flex;align-items:center;justify-content:center;font-weight:700;color:white;font-size:18px;box-shadow:0 6px 18px rgba(12,13,24,0.6)}
+    h1{font-size:20px;margin:0}
+    p.lead{margin:6px 0 0;color:var(--muted)}
+
+    .card{background:linear-gradient(180deg,var(--card), rgba(11,18,32,0.6));border-radius:12px;padding:20px;box-shadow:0 8px 30px rgba(2,6,23,0.6);margin-bottom:18px}
+    nav.toc{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px}
+    nav.toc a{padding:8px 12px;border-radius:8px;background:var(--glass);color:var(--muted);text-decoration:none;font-weight:600;font-size:13px}
+    .grid{display:grid;grid-template-columns:1fr 340px;gap:18px}
+    .sidebar{position:sticky;top:28px;height:max-content}
+    h2{margin:12px 0;font-size:16px}
+    pre{background:#020617;padding:12px;border-radius:8px;overflow:auto;font-family:var(--mono);font-size:13px}
+    table{width:100%;border-collapse:collapse;margin:8px 0}
+    table th, table td{padding:8px;border-bottom:1px solid rgba(255,255,255,0.04);text-align:left}
+    .badge{display:inline-block;padding:6px 8px;border-radius:999px;background:rgba(255,255,255,0.03);font-size:12px;color:var(--muted)}
+    .diagram{width:100%;height:140px;margin:10px 0}
+    .cta{display:flex;gap:8px;margin-top:10px}
+    .btn{background:linear-gradient(90deg,var(--accent),#0ea5e9);border:none;color:white;padding:10px 12px;border-radius:8px;cursor:pointer;font-weight:700}
+    .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+    footer{color:var(--muted);font-size:13px;margin-top:18px}
+
+    /* responsive */
+    @media (max-width:900px){.grid{grid-template-columns:1fr}.sidebar{position:static}}
+
+    /* print */
+    @media print{body{background:white;color:black} .card{box-shadow:none;background:transparent} .logo, .toc, .btn{display:none}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">GIT</div>
+      <div>
+        <h1>Git Merge vs Git Rebase — Full Technical Guide</h1>
+        <p class="lead">Concise, copy-ready guide explaining differences, workflows, and team rules.</p>
+      </div>
+    </header>
+
+    <div class="card">
+      <nav class="toc">
+        <a href="#intro">Introduction</a>
+        <a href="#core">Core Difference</a>
+        <a href="#merge">How Merge Works</a>
+        <a href="#rebase">How Rebase Works</a>
+        <a href="#when">When to Use</a>
+        <a href="#workflows">Workflows</a>
+        <a href="#conflicts">Conflicts</a>
+        <a href="#best">Best Practices</a>
+      </nav>
+
+      <div class="grid">
+        <main>
+          <section id="intro">
+            <h2>1. Introduction</h2>
+            <p>Git provides two primary ways to integrate changes from one branch into another: <code>git merge</code> and <code>git rebase</code>. Both achieve the same end result—but in fundamentally different ways. This guide explains the difference, with examples and team-level recommendations.</p>
+          </section>
+
+          <section id="core" class="card" style="padding:16px">
+            <h2>2. Core Difference (Very Simple Explanation)</h2>
+            <table>
+              <thead><tr><th>Action</th><th>What it does</th><th>Results in</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Merge</strong></td><td>Combines two branches and creates a new merge commit</td><td>Multi-branch history (safe)</td></tr>
+                <tr><td><strong>Rebase</strong></td><td>Moves your commits and replays them on top of another branch</td><td>Linear history (clean, but rewrites history)</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section id="merge">
+            <h2>3. How Git Merge Works</h2>
+            <p><strong>What happens</strong></p>
+            <ul>
+              <li>Git creates a new commit that joins the histories of both branches.</li>
+              <li>History is preserved exactly as it happened.</li>
+              <li>No existing commits are changed.</li>
+            </ul>
+
+            <div class="diagram" aria-hidden="true">
+              <!-- SVG diagram for merge -->
+              <svg viewBox="0 0 800 140" preserveAspectRatio="xMidYMid meet" width="100%" height="100%">
+                <defs>
+                  <marker id="dot" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6"><circle cx="5" cy="5" r="4" fill="#88f"/></marker>
+                </defs>
+                <!-- main line -->
+                <g transform="translate(30,20)">
+                  <text x="0" y="12" fill="#94a3b8" font-size="12">main:</text>
+                  <g transform="translate(60,0)">
+                    <circle cx="0" cy="10" r="8" fill="#3b82f6" /> <text x="-6" y="14" font-size="11" fill="#fff">A</text>
+                    <circle cx="80" cy="10" r="8" fill="#3b82f6" /> <text x="74" y="14" font-size="11" fill="#fff">B</text>
+                    <circle cx="160" cy="10" r="8" fill="#3b82f6" /> <text x="154" y="14" font-size="11" fill="#fff">C</text>
+                    <line x1="8" y1="10" x2="72" y2="10" stroke="#233444" stroke-width="4"/>
+                    <line x1="88" y1="10" x2="152" y2="10" stroke="#233444" stroke-width="4"/>
+                  </g>
+                  <!-- feature -->
+                  <g transform="translate(200,28)">
+                    <text x="-190" y="34" fill="#94a3b8" font-size="12">feature:</text>
+                    <circle cx="0" cy="32" r="8" fill="#ef4444"/> <text x="-4" y="36" font-size="11" fill="#fff">D</text>
+                    <circle cx="80" cy="32" r="8" fill="#ef4444"/> <text x="76" y="36" font-size="11" fill="#fff">E</text>
+                    <line x1="8" y1="32" x2="72" y2="32" stroke="#2b2b2b" stroke-width="4"/>
+                  </g>
+                  <!-- merge commit -->
+                  <g transform="translate(340,4)">
+                    <circle cx="80" cy="22" r="10" fill="#7c3aed"/> <text x="74" y="26" font-size="11" fill="#fff">M</text>
+                    <line x1="-160" y1="8" x2="30" y2="20" stroke="#2b2b2b" stroke-width="3" stroke-dasharray="4"/>
+                    <line x1="-60" y1="40" x2="30" y2="22" stroke="#2b2b2b" stroke-width="3" stroke-dasharray="4"/>
+                  </g>
+                </g>
+              </svg>
+            </div>
+
+            <h3>When merge is ideal</h3>
+            <ul>
+              <li>Team collaboration (shared branches)</li>
+              <li>Long-running branches (e.g., <code>develop</code>, <code>release</code>)</li>
+              <li>When you want audit-friendly history</li>
+            </ul>
+
+            <p><strong>Pros</strong></p>
+            <ul><li>Safe, no rewriting</li><li>Keeps chronological flow</li><li>Good for teamwork</li></ul>
+            <p><strong>Cons</strong></p>
+            <ul><li>Creates extra merge commits</li><li>History becomes “branchy” and harder to read</li></ul>
+          </section>
+
+          <section id="rebase" class="card" style="padding:16px">
+            <h2>4. How Git Rebase Works</h2>
+            <p><strong>What happens</strong></p>
+            <ul>
+              <li>Git takes your feature branch commits</li>
+              <li>Temporarily stores them</li>
+              <li>Moves your branch to the tip of the target branch</li>
+              <li>Re-applies commits one by one</li>
+            </ul>
+
+            <div class="diagram" aria-hidden="true">
+              <!-- SVG rebase diagram -->
+              <svg viewBox="0 0 800 140" preserveAspectRatio="xMidYMid meet" width="100%" height="100%">
+                <g transform="translate(30,20)">
+                  <text x="0" y="12" fill="#94a3b8" font-size="12">main:</text>
+                  <g transform="translate(60,0)">
+                    <circle cx="0" cy="10" r="8" fill="#3b82f6" /> <text x="-6" y="14" font-size="11" fill="#fff">A</text>
+                    <circle cx="80" cy="10" r="8" fill="#3b82f6" /> <text x="74" y="14" font-size="11" fill="#fff">B</text>
+                    <circle cx="160" cy="10" r="8" fill="#3b82f6" /> <text x="154" y="14" font-size="11" fill="#fff">C</text>
+                    <line x1="8" y1="10" x2="72" y2="10" stroke="#233444" stroke-width="4"/>
+                    <line x1="88" y1="10" x2="152" y2="10" stroke="#233444" stroke-width="4"/>
+                  </g>
+
+                  <g transform="translate(200,28)">
+                    <text x="-190" y="34" fill="#94a3b8" font-size="12">feature:</text>
+                    <circle cx="0" cy="32" r="8" fill="#ef4444"/> <text x="-4" y="36" font-size="11" fill="#fff">D</text>
+                    <circle cx="80" cy="32" r="8" fill="#ef4444"/> <text x="76" y="36" font-size="11" fill="#fff">E</text>
+                    <line x1="8" y1="32" x2="72" y2="32" stroke="#2b2b2b" stroke-width="4"/>
+                  </g>
+
+                  <g transform="translate(380,0)">
+                    <circle cx="0" cy="10" r="8" fill="#3b82f6"/> <text x="-6" y="14" font-size="11" fill="#fff">D'</text>
+                    <circle cx="80" cy="10" r="8" fill="#3b82f6"/> <text x="74" y="14" font-size="11" fill="#fff">E'</text>
+                    <line x1="8" y1="10" x2="72" y2="10" stroke="#233444" stroke-width="4"/>
+                    <line x1="-100" y1="22" x2="-8" y2="12" stroke="#2b2b2b" stroke-width="2" stroke-dasharray="4"/>
+                  </g>
+                </g>
+              </svg>
+            </div>
+
+            <h3>When rebase is ideal</h3>
+            <ul>
+              <li>Working on private/local feature branches</li>
+              <li>Cleaning up commit history before merging</li>
+              <li>Keeping a clean, linear project history</li>
+            </ul>
+
+            <p><strong>Pros</strong></p>
+            <ul><li>Beautiful linear history</li><li>Easier to read logs (<code>git log</code>)</li><li>Great for squashing/fixing commits</li></ul>
+            <p><strong>Cons</strong></p>
+            <ul><li>Rewrites history (dangerous when shared)</li><li>Requires force-push (<code>--force-with-lease</code>)</li><li>Can cause conflicts multiple times (per commit)</li></ul>
+          </section>
+
+          <section id="golden" >
+            <h2>5. Golden Rule of Rebase</h2>
+            <p><strong>Never rebase public/shared branches.</strong> If other developers have already pulled your branch — do <em>not</em> rebase it. Rewriting shared history forces others to fix their local repos. Use rebase only on local/private branches or branches you haven't shared.</p>
+          </section>
+
+          <section id="when" class="card" style="padding:16px">
+            <h2>6. When To Use Merge vs Rebase (Decision Guide)</h2>
+            <div style="display:flex;gap:12px;flex-wrap:wrap">
+              <div style="flex:1;min-width:220px">
+                <h3>Use <span class="badge">MERGE</span> when:</h3>
+                <ul>
+                  <li>Multiple developers work on the same branch</li>
+                  <li>You want to preserve the branch structure</li>
+                  <li>It's a production or shared branch (<code>main</code>, <code>develop</code>)</li>
+                </ul>
+              </div>
+              <div style="flex:1;min-width:220px">
+                <h3>Use <span class="badge">REBASE</span> when:</h3>
+                <ul>
+                  <li>You want a clean linear commit history</li>
+                  <li>You're preparing a feature branch for PR</li>
+                  <li>Your branch is private or not yet pushed</li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <section id="workflows">
+            <h2>7. Real Workflow Examples</h2>
+            <h4>Scenario 1: Update your feature with latest main (team-friendly)</h4>
+            <pre>git checkout feature/order-module
+# make sure main is up-to-date
+git checkout main
+git pull origin main
+# back to feature
+git checkout feature/order-module
+git merge main</pre>
+
+            <h4>Scenario 2: Update your feature branch cleanly before PR (best practice)</h4>
+            <pre>git fetch origin
+git checkout feature/order-module
+git rebase origin/main
+# resolve conflicts then
+git push --force-with-lease</pre>
+
+            <h4>Scenario 3: Merge feature into main (recommended in teams)</h4>
+            <p>On GitHub/GitLab use one of: <strong>Create a Merge Commit</strong> or <strong>Squash and Merge</strong> depending on whether you want per-commit history preserved.</p>
+          </section>
+
+          <section id="conflicts" class="card" style="padding:16px">
+            <h2>8. Conflict Handling Differences</h2>
+            <h4>During Merge</h4>
+            <p>Conflicts appear once. After resolving and committing, you'll have a merge commit.</p>
+            <h4>During Rebase</h4>
+            <p>Conflicts may appear multiple times (once per commit being replayed). Resolve each, then:</p>
+            <pre>git add .
+git rebase --continue</pre>
+          </section>
+
+          <section id="best">
+            <h2>9. Team Best Practices</h2>
+            <ul>
+              <li>Prefer merge for shared branches.</li>
+              <li>Prefer rebase to clean your private branches.</li>
+              <li>Use <code>--force-with-lease</code> instead of <code>--force</code>.</li>
+              <li>Enable “Squash and merge” for PRs to keep the main branch clean.</li>
+              <li>Protect <code>main</code> / <code>master</code> from force pushes.</li>
+            </ul>
+
+            <h3>Summary Table</h3>
+            <table>
+              <thead><tr><th>Feature</th><th>Merge</th><th>Rebase</th></tr></thead>
+              <tbody>
+                <tr><td>Keeps original commits</td><td>✅ Yes</td><td>❌ No</td></tr>
+                <tr><td>Creates merge commit</td><td>✅ Yes</td><td>❌ No</td></tr>
+                <tr><td>History rewriting</td><td>❌ No</td><td>✅ Yes</td></tr>
+                <tr><td>Best for shared branches</td><td>✅ Yes</td><td>❌ No</td></tr>
+                <tr><td>Best for cleaning commits</td><td>❌ No</td><td>✅ Yes</td></tr>
+                <tr><td>Resulting history</td><td>Branching</td><td>Linear</td></tr>
+              </tbody>
+            </table>
+
+            <h3>Final Recommendation</h3>
+            <p>Use <strong>MERGE</strong> for safety and teamwork. Use <strong>REBASE</strong> for clean history when working alone. Do not rebase commits others already pulled.</p>
+          </section>
+
+        </main>
+
+        <aside class="sidebar">
+          <div class="card">
+            <h3>Quick Actions</h3>
+            <p>Copy this document into your repo as <code>docs/git-merge-vs-rebase.md</code> or <code>GIT_MERGE_REBASE.md</code>.</p>
+            <div class="cta">
+              <button class="btn" id="downloadBtn">Download HTML</button>
+              <button class="btn secondary" id="copyBtn">Copy Markdown</button>
+            </div>
+            <p style="margin-top:10px;color:var(--muted);font-size:13px">Tip: Use the Markdown copy to place in <code>/docs</code> or as a repo README.</p>
+          </div>
+
+          <div class="card" style="margin-top:12px">
+            <h4>File info</h4>
+            <p class="badge">Length: ~900 words</p>
+            <p class="badge">Format: Single-file HTML</p>
+          </div>
+        </aside>
+      </div>
+
+    </div>
+
+    <footer>
+      <p>Created for team training &amp; onboarding — you can copy, adjust headers, or add your company logo.</p>
+    </footer>
+  </div>
+
+  <script>
+    // prepare Markdown version for copy (simple conversion)
+    const markdown = `# Git Merge vs Git Rebase — Full Technical Guide
+
+## 1. Introduction
+Git provides two primary ways to integrate changes from one branch into another: \`git merge\` and \`git rebase\`.
+
+## 2. Core Difference (Very Simple Explanation)
+| Action | What it does | Results in |
+|---|---|---|
+| Merge | Combines two branches and creates a new merge commit | Multi-branch history (safe) |
+| Rebase | Moves your commits and replays them on top of another branch | Linear history (clean, but rewrites history) |
+
+## 3. How Git Merge Works
+- Git creates a new commit that joins the histories of both branches.
+- History is preserved exactly as it happened.
+
+## 4. How Git Rebase Works
+- Git takes your feature branch commits, temporarily stores them, moves your branch to the tip of the target branch, and re-applies commits one by one.
+
+## 5. Golden Rule of Rebase
+Never rebase public/shared branches.
+
+## 6. When To Use Merge vs Rebase (Decision Guide)
+- Use MERGE when multiple developers work on the same branch.
+- Use REBASE when you want a clean linear commit history and your branch is private.
+
+## 7. Real Workflow Examples
+**Update feature using merge:**\n\n\`git checkout feature/order-module\n git merge main\`\n
+**Rebasing before PR:**\n\n\`git fetch origin\n git checkout feature/order-module\n git rebase origin/main\n git push --force-with-lease\`\n
+## 8. Conflict Handling Differences
+- Merge: conflicts once.\n- Rebase: conflicts may appear multiple times across commits.
+
+## 9. Team Best Practices
+- Prefer merge for shared branches.\n- Prefer rebase to clean your private branches.\n- Use --force-with-lease instead of --force.\n
+**Final Recommendation:** Use MERGE for safety and teamwork. Use REBASE for clean history when working alone. Do not rebase commits others already pulled.
+`;
+
+    document.getElementById('copyBtn').addEventListener('click', async () => {
+      try{
+        await navigator.clipboard.writeText(markdown);
+        alert('Markdown copied to clipboard — paste into docs/git-merge-vs-rebase.md');
+      }catch(e){
+        alert('Copy failed — your browser may block clipboard.');
+      }
+    });
+
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+      const blob = new Blob([document.documentElement.outerHTML], {type: 'text/html'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'git-merge-vs-rebase.html';
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    });
+  </script>
+</body>
+</html>
